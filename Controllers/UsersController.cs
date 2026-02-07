@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using _2026_peminjaman_ruangan_backend.Data;
 using _2026_peminjaman_ruangan_backend.Models;
+using _2026_peminjaman_ruangan_backend.DTOs.User;
 
 namespace _2026_peminjaman_ruangan_backend.Controllers;
 
@@ -39,12 +40,41 @@ public class UsersController : ControllerBase
 
     // POST: api/users
     [HttpPost]
-    public async Task<ActionResult<User>> PostUser(User user)
+    public async Task<ActionResult<User>> PostUser(CreateUserDto dto)
     {
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        // Manual mapping dari DTO ke Model
+        var user = new User
+        {
+            NamaLengkap = dto.NamaLengkap,
+            Email = dto.Email,
+            Password = dto.Password, // Plain text (belum ada hashing di Task 8)
+            Role = dto.Role,
+            NimNip = dto.NimNip,
+            CreatedAt = DateTime.UtcNow,pdateUserDto dto)
+    {
+        var user = await _context.Users.FindAsync(id);
+        if (user == null)
+        {
+            return NotFound();
+        }
 
-        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        // Manual mapping - update hanya field yang diberikan
+        if (!string.IsNullOrWhiteSpace(dto.NamaLengkap))
+            user.NamaLengkap = dto.NamaLengkap;
+
+        if (!string.IsNullOrWhiteSpace(dto.Email))
+            user.Email = dto.Email;
+
+        if (!string.IsNullOrWhiteSpace(dto.Password))
+            user.Password = dto.Password; // Plain text
+
+        if (dto.Role.HasValue)
+            user.Role = dto.Role.Value;
+
+        if (dto.NimNip != null) // Allow empty string to clear NimNip
+            user.NimNip = dto.NimNip;
+
+        user.UpdatedAt = DateTime.UtcNow= user.Id }, user);
     }
 
     // PUT: api/users/5

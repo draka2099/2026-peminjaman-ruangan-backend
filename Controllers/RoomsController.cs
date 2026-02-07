@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using _2026_peminjaman_ruangan_backend.Data;
 using _2026_peminjaman_ruangan_backend.Models;
+using _2026_peminjaman_ruangan_backend.DTOs.Room;
 
 namespace _2026_peminjaman_ruangan_backend.Controllers;
 
@@ -39,12 +40,41 @@ public class RoomsController : ControllerBase
 
     // POST: api/rooms
     [HttpPost]
-    public async Task<ActionResult<Room>> PostRoom(Room room)
+    public async Task<ActionResult<Room>> PostRoom(CreateRoomDto dto)
     {
-        _context.Rooms.Add(room);
-        await _context.SaveChangesAsync();
+        // Manual mapping dari DTO ke Model
+        var room = new Room
+        {
+            NamaRuangan = dto.NamaRuangan,
+            Lokasi = dto.Lokasi,
+            Kapasitas = dto.Kapasitas,
+            Deskripsi = dto.Deskripsi,
+            IsAvailable = dto.IsAvailable,
+            CreatedAt = DateTime.UtcNow,UpdateRoomDto dto)
+    {
+        var room = await _context.Rooms.FindAsync(id);
+        if (room == null)
+        {
+            return NotFound();
+        }
 
-        return CreatedAtAction(nameof(GetRoom), new { id = room.Id }, room);
+        // Manual mapping - update hanya field yang diberikan
+        if (!string.IsNullOrWhiteSpace(dto.NamaRuangan))
+            room.NamaRuangan = dto.NamaRuangan;
+
+        if (dto.Lokasi != null)
+            room.Lokasi = dto.Lokasi;
+
+        if (dto.Kapasitas.HasValue)
+            room.Kapasitas = dto.Kapasitas.Value;
+
+        if (dto.Deskripsi != null)
+            room.Deskripsi = dto.Deskripsi;
+
+        if (dto.IsAvailable.HasValue)
+            room.IsAvailable = dto.IsAvailable.Value;
+
+        room.UpdatedAt = DateTime.UtcNow= room.Id }, room);
     }
 
     // PUT: api/rooms/5

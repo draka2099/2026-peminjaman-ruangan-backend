@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using _2026_peminjaman_ruangan_backend.Data;
 using _2026_peminjaman_ruangan_backend.Models;
+using _2026_peminjaman_ruangan_backend.DTOs.Booking;
+using _2026_peminjaman_ruangan_backend.Models.Enums;
 
 namespace _2026_peminjaman_ruangan_backend.Controllers;
 
@@ -39,10 +41,41 @@ public class BookingsController : ControllerBase
 
     // POST: api/bookings
     [HttpPost]
-    public async Task<ActionResult<Booking>> PostBooking(Booking booking)
+    public async Task<ActionResult<Booking>> PostBooking(CreateBookingDto dto)
     {
-        _context.Bookings.Add(booking);
-        await _context.SaveChangesAsync();
+        // Manual mapping dari DTO ke Model
+        var booking = new Booking
+        {
+            UserId = dto.UserId,
+            RoomId = dto.RoomId,
+            TanggalPeminjaman = dto.TanggalPeminjaman,
+            WaktuMulai = dto.WaktuMulai,
+            WaktuSelesai = dto.WaktuSelesai,
+            Keperluan = dto.Keperluan,UpdateBookingDto dto)
+    {
+        var booking = await _context.Bookings.FindAsync(id);
+        if (booking == null)
+        {
+            return NotFound();
+        }
+
+        // Manual mapping - update hanya field yang diberikan
+        if (dto.RoomId.HasValue)
+            booking.RoomId = dto.RoomId.Value;
+
+        if (dto.TanggalPeminjaman.HasValue)
+            booking.TanggalPeminjaman = dto.TanggalPeminjaman.Value;
+
+        if (dto.WaktuMulai.HasValue)
+            booking.WaktuMulai = dto.WaktuMulai.Value;
+
+        if (dto.WaktuSelesai.HasValue)
+            booking.WaktuSelesai = dto.WaktuSelesai.Value;
+
+        if (!string.IsNullOrWhiteSpace(dto.Keperluan))
+            booking.Keperluan = dto.Keperluan;
+
+        booking.UpdatedAt = DateTime.UtcNow
 
         return CreatedAtAction(nameof(GetBooking), new { id = booking.Id }, booking);
     }
