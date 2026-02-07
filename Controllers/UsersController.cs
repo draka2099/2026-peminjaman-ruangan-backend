@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using _2026_peminjaman_ruangan_backend.Data;
 using _2026_peminjaman_ruangan_backend.Models;
 using _2026_peminjaman_ruangan_backend.DTOs.User;
+using _2026_peminjaman_ruangan_backend.Models.Enums; // Pastikan Enum UserRole ada di sini
 
 namespace _2026_peminjaman_ruangan_backend.Controllers;
 
@@ -38,7 +39,7 @@ public class UsersController : ControllerBase
         return user;
     }
 
-    // POST: api/users
+    // POST: api/users (Create)
     [HttpPost]
     public async Task<ActionResult<User>> PostUser(CreateUserDto dto)
     {
@@ -47,10 +48,22 @@ public class UsersController : ControllerBase
         {
             NamaLengkap = dto.NamaLengkap,
             Email = dto.Email,
-            Password = dto.Password, // Plain text (belum ada hashing di Task 8)
+            Password = dto.Password, // Plain text (Nanti Task Security baru di-hash)
             Role = dto.Role,
             NimNip = dto.NimNip,
-            CreatedAt = DateTime.UtcNow,pdateUserDto dto)
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+    }
+
+    // PUT: api/users/5 (Update)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutUser(int id, UpdateUserDto dto)
     {
         var user = await _context.Users.FindAsync(id);
         if (user == null)
@@ -66,27 +79,15 @@ public class UsersController : ControllerBase
             user.Email = dto.Email;
 
         if (!string.IsNullOrWhiteSpace(dto.Password))
-            user.Password = dto.Password; // Plain text
+            user.Password = dto.Password; 
 
         if (dto.Role.HasValue)
             user.Role = dto.Role.Value;
 
-        if (dto.NimNip != null) // Allow empty string to clear NimNip
+        if (dto.NimNip != null) 
             user.NimNip = dto.NimNip;
 
-        user.UpdatedAt = DateTime.UtcNow= user.Id }, user);
-    }
-
-    // PUT: api/users/5
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutUser(int id, User user)
-    {
-        if (id != user.Id)
-        {
-            return BadRequest();
-        }
-
-        _context.Entry(user).State = EntityState.Modified;
+        user.UpdatedAt = DateTime.UtcNow;
 
         try
         {

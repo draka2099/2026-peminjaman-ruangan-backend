@@ -1,53 +1,64 @@
 using Microsoft.EntityFrameworkCore;
 using _2026_peminjaman_ruangan_backend.Data;
-using _2026_peminjaman_ruangan_backend.Seeders;
-using DotNetEnv;
+using _2026_peminjaman_ruangan_backend.Seeders; // Tambahkan namespace ini
+using DotNetEnv; // Pastikan DotNetEnv terinstall (jika pakai .env)
+using System.Text.Json.Serialization;
 
-// Load environment variables from .env file
-Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// 1. Load Environment Variables (jika pakai file .env)
+Env.Load();
 
-// Configure PostgreSQL database connection
+// 2. Add services to the container.
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Ini kuncinya: Abaikan siklus berulang (Circular Reference)
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
+
+// 3. Konfigurasi Database (Ambil dari Environment Variable atau appsettings)
+// Prioritas: Environment Variable > appsettings.json
 var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION") 
-    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+                       ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// 4. Konfigurasi Swagger (SWASHBUCKLE - INI KUNCINYA)
+// Menggantikan AddOpenApi() yang tidak punya UI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Apply migrations and seed database
+// 5. Jalankan Seeder Otomatis
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
+        // Jalankan migrasi database otomatis (opsional, biar aman)
         var context = services.GetRequiredService<ApplicationDbContext>();
-        
-        // Apply pending migrations
         await context.Database.MigrateAsync();
-        
-        // Seed the database
-        await DatabaseSeeder.SeedAsync(context);
+
+        // Isi data awal (Seeder)
+        await DatabaseSeeder.SeedAsync(context); // Pastikan method SeedAsync dipanggil dengan benar
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+        logger.LogError(ex, "An error occurred during migration or seeding.");
     }
 }
 
-// Configure the HTTP request pipeline.
+// 6. Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    // AKTIFKAN SWAGGER UI DI SINI
+    app.UseSwagger();
+    app.UseSwaggerUI(); // Ini yang memunculkan halaman HTML
 }
 
 app.UseHttpsRedirection();

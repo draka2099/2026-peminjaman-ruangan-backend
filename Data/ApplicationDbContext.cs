@@ -54,6 +54,8 @@ public class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(e => new { e.RoomId, e.TanggalPeminjaman, e.WaktuMulai, e.WaktuSelesai });
+
+            entity.HasQueryFilter(b => !b.IsDeleted);
         });
 
         // Configure BookingStatusHistory entity

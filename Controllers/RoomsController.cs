@@ -38,7 +38,7 @@ public class RoomsController : ControllerBase
         return room;
     }
 
-    // POST: api/rooms
+    // POST: api/rooms (Create)
     [HttpPost]
     public async Task<ActionResult<Room>> PostRoom(CreateRoomDto dto)
     {
@@ -49,8 +49,20 @@ public class RoomsController : ControllerBase
             Lokasi = dto.Lokasi,
             Kapasitas = dto.Kapasitas,
             Deskripsi = dto.Deskripsi,
-            IsAvailable = dto.IsAvailable,
-            CreatedAt = DateTime.UtcNow,UpdateRoomDto dto)
+            IsAvailable = dto.IsAvailable, // Default true biasanya
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        _context.Rooms.Add(room);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetRoom), new { id = room.Id }, room);
+    }
+
+    // PUT: api/rooms/5 (Update)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutRoom(int id, UpdateRoomDto dto)
     {
         var room = await _context.Rooms.FindAsync(id);
         if (room == null)
@@ -62,31 +74,19 @@ public class RoomsController : ControllerBase
         if (!string.IsNullOrWhiteSpace(dto.NamaRuangan))
             room.NamaRuangan = dto.NamaRuangan;
 
-        if (dto.Lokasi != null)
+        if (!string.IsNullOrWhiteSpace(dto.Lokasi))
             room.Lokasi = dto.Lokasi;
 
         if (dto.Kapasitas.HasValue)
             room.Kapasitas = dto.Kapasitas.Value;
 
-        if (dto.Deskripsi != null)
+        if (!string.IsNullOrWhiteSpace(dto.Deskripsi))
             room.Deskripsi = dto.Deskripsi;
 
         if (dto.IsAvailable.HasValue)
             room.IsAvailable = dto.IsAvailable.Value;
 
-        room.UpdatedAt = DateTime.UtcNow= room.Id }, room);
-    }
-
-    // PUT: api/rooms/5
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutRoom(int id, Room room)
-    {
-        if (id != room.Id)
-        {
-            return BadRequest();
-        }
-
-        _context.Entry(room).State = EntityState.Modified;
+        room.UpdatedAt = DateTime.UtcNow;
 
         try
         {
