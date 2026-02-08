@@ -122,4 +122,21 @@ if (dto.RoomId.HasValue)
 - RESTful API endpoints untuk manajemen peminjaman ruangan
 - Database schema dengan foreign key relationships
 - Automatic timestamps (CreatedAt, UpdatedAt)
-- Development environment dengan auto-migration dan seeding
+- Development environment dengan auto-migration dan seeding 
+
+
+## [0.2.0] - 2026-02-07
+
+### Added
+- **Business Logic**: Implemented `IsRoomAvailable` check in `BookingsController` to prevent overlapping schedules.
+- **Soft Delete**: Added `IsDeleted` and `DeletedAt` columns to `Booking` model.
+- **Global Query Filter**: Configured `DbContext` to automatically exclude soft-deleted records from queries.
+- **Swagger UI**: Integrated `Swashbuckle` for interactive API testing at `/swagger`.
+
+### Changed
+- **API Response**: Configured `ReferenceHandler.IgnoreCycles` in `Program.cs` to fix JSON Circular Reference errors (Error 500).
+- **Database Seeder**: Verified and tested automatic data seeding functionality.
+
+### Fixed
+- **Controllers**: Fixed syntax errors (merged methods) in `UsersController` and `RoomsController`.
+- **Validation**: Fixed `[StringLength]` validation logic for User Password.
