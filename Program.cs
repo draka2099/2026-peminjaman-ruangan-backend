@@ -31,9 +31,26 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// 5. Konfigurasi CORS untuk Frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:5173", "http://127.0.0.1:5173",
+                "http://localhost:5174", "http://127.0.0.1:5174",
+                "http://localhost:5175", "http://127.0.0.1:5175",
+                "http://localhost:5176", "http://127.0.0.1:5176"
+              )
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
-// 5. Jalankan Seeder Otomatis
+// 6. Jalankan Seeder Otomatis
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -53,13 +70,16 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// 6. Configure the HTTP request pipeline.
+// 7. Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     // AKTIFKAN SWAGGER UI DI SINI
     app.UseSwagger();
     app.UseSwaggerUI(); // Ini yang memunculkan halaman HTML
 }
+
+// Aktifkan CORS - HARUS sebelum UseAuthorization
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 

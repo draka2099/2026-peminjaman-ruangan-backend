@@ -18,6 +18,33 @@ public class UsersController : ControllerBase
         _context = context;
     }
 
+    // POST: api/users/login
+    [HttpPost("login")]
+    public async Task<ActionResult<User>> Login([FromBody] LoginDto dto)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        
+        if (user == null)
+        {
+            return Unauthorized(new { message = "Email tidak ditemukan" });
+        }
+
+        // Verifikasi password dengan BCrypt
+        if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
+        {
+            return Unauthorized(new { message = "Password salah" });
+        }
+
+        // Return user tanpa password
+        return Ok(new {
+            id = user.Id,
+            namaLengkap = user.NamaLengkap,
+            email = user.Email,
+            role = user.Role,
+            nimNip = user.NimNip
+        });
+    }
+
     // GET: api/users
     [HttpGet]
     public async Task<ActionResult<IEnumerable<User>>> GetUsers()
@@ -43,12 +70,18 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<User>> PostUser(CreateUserDto dto)
     {
+        // Cek apakah email sudah ada
+        if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
+        {
+            return BadRequest(new { message = "Email sudah terdaftar" });
+        }
+
         // Manual mapping dari DTO ke Model
         var user = new User
         {
             NamaLengkap = dto.NamaLengkap,
             Email = dto.Email,
-            Password = dto.Password, // Plain text (Nanti Task Security baru di-hash)
+            Password = BCrypt.Net.BCrypt.HashPassword(dto.Password), // Hash password
             Role = dto.Role,
             NimNip = dto.NimNip,
             CreatedAt = DateTime.UtcNow,

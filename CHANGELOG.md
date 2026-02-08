@@ -140,3 +140,23 @@ if (dto.RoomId.HasValue)
 ### Fixed
 - **Controllers**: Fixed syntax errors (merged methods) in `UsersController` and `RoomsController`.
 - **Validation**: Fixed `[StringLength]` validation logic for User Password.
+
+## [0.1.0] - 2026-02-08
+
+### Added
+
+DTOs/User/LoginDto.cs
+File baru sebagai Data Transfer Object untuk request login (email + password).
+
+DTOs/Booking/UpdateStatusDto.cs
+File baru sebagai DTO untuk update status booking.
+
+### Changed
+Program.cs
+Menambahkan CORS policy untuk mengizinkan frontend (localhost:5173-5176) mengakses API backend. Tanpa CORS, browser akan memblokir request dari domain berbeda.
+
+UsersController.cs
+Menambahkan endpoint /api/Users/login untuk autentikasi user dengan verifikasi password BCRypt.
+
+BookingsController.cs
+Menambahkan endpoint /api/Bookings/{id}/status untuk admin mengubah status booking (Approve/Reject).

@@ -153,6 +153,38 @@ public class BookingsController : ControllerBase
         return NoContent();
     }
 
+    // PATCH: api/bookings/5/status (Update Status Only)
+    [HttpPatch("{id}/status")]
+    public async Task<IActionResult> UpdateBookingStatus(int id, [FromBody] UpdateStatusDto dto)
+    {
+        var booking = await _context.Bookings.FindAsync(id);
+        if (booking == null)
+        {
+            return NotFound();
+        }
+
+        booking.Status = dto.Status;
+        booking.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    // GET: api/bookings/user/5 (Get bookings by user ID)
+    [HttpGet("user/{userId}")]
+    public async Task<ActionResult<IEnumerable<Booking>>> GetBookingsByUser(int userId)
+    {
+        var bookings = await _context.Bookings
+            .Include(b => b.Room)
+            .Include(b => b.User)
+            .Where(b => b.UserId == userId)
+            .OrderByDescending(b => b.CreatedAt)
+            .ToListAsync();
+
+        return bookings;
+    }
+
     // Helper Method: Cek apakah ruangan kosong
     private async Task<bool> IsRoomAvailable(int roomId, DateOnly date, TimeOnly start, TimeOnly end, int? excludeBookingId = null)
     {

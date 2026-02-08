@@ -85,7 +85,7 @@ namespace _2026_peminjaman_ruangan_backend.Migrations
 
                     b.HasIndex("RoomId", "TanggalPeminjaman", "WaktuMulai", "WaktuSelesai");
 
-                    b.ToTable("bookings");
+                    b.ToTable("bookings", (string)null);
                 });
 
             modelBuilder.Entity("_2026_peminjaman_ruangan_backend.Models.BookingStatusHistory", b =>
@@ -132,7 +132,7 @@ namespace _2026_peminjaman_ruangan_backend.Migrations
 
                     b.HasIndex("ChangedByUserId");
 
-                    b.ToTable("booking_status_histories");
+                    b.ToTable("booking_status_histories", (string)null);
                 });
 
             modelBuilder.Entity("_2026_peminjaman_ruangan_backend.Models.Room", b =>
@@ -180,7 +180,7 @@ namespace _2026_peminjaman_ruangan_backend.Migrations
 
                     b.HasIndex("NamaRuangan");
 
-                    b.ToTable("rooms");
+                    b.ToTable("rooms", (string)null);
                 });
 
             modelBuilder.Entity("_2026_peminjaman_ruangan_backend.Models.User", b =>
@@ -237,7 +237,7 @@ namespace _2026_peminjaman_ruangan_backend.Migrations
                     b.HasIndex("NimNip")
                         .IsUnique();
 
-                    b.ToTable("users");
+                    b.ToTable("users", (string)null);
                 });
 
             modelBuilder.Entity("_2026_peminjaman_ruangan_backend.Models.Booking", b =>
